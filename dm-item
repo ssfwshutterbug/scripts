@@ -17,7 +17,9 @@ BILIBILI='search.bilibili.com/all?keyword='
 GENTOOPKG='https://packages.gentoo.org/packages/search?q='
 GENTOOWIKI='https://wiki.gentoo.org/index.php?title=Special%3ASearch&search='
 
-item=$(echo "\
+# try to accept method args
+item=$1
+[ -z "$item" ] && item=$(echo "\
 	!translate
 	!layout change
 	!use flag
@@ -30,7 +32,8 @@ item=$(echo "\
 " |dmenu -l 10 -fn "$FONT" -p ">>>>>" |tr -d '\t')
 
 get_input () {
-	echo |dmenu -fn "$FONT"
+    prompt=$1
+	echo |dmenu -fn "$FONT" -p "$prompt"
 }
 
 get_layout () {
@@ -84,33 +87,33 @@ change_layout () {
 
 case $item in
 	"!translate")
-		new-translate "$( echo |dmenu -p "translate::" -fn "$FONT" )"
+		translate "$( echo |dmenu -p "translate::" -fn "$FONT" )"
 		;;
 	"!use flag")
 		cat $USE_FILE | dmenu -l 10 -fn "$FONT"
 		;;
 	"!arch wiki")
-		search="$( get_input )"
+		search="$( get_input "arch wiki: ")"
 		firefox-bin --search --new-tab "${ARCHWIKI}${search}"
 		;;	
 	"!gentoo package")
-		search="$( get_input )"
+		search="$( get_input "gentoo package: ")"
 		firefox-bin --search --new-tab "${GENTOOPKG}${search}"
 		;;	
 	"!gentoo wiki")
-		search="$( get_input )"
+		search="$( get_input "gentoo wiki: ")"
 		firefox-bin --search --new-tab "${GENTOOWIKI}${search}"
 		;;	
 	"!youtube")
-		search="$( get_input )"
+		search="$( get_input "youtube: ")"
 		firefox-bin --search --new-tab "${YOUTUBE}${search}"
 		;;	
 	"!duckduckgo")
-		search="$( get_input )"
+		search="$( get_input "duckduckgo: ")"
 		firefox-bin --search --new-tab "${DUCKDUCKGO}${search}"
 		;;	
 	"!wikipedia")
-		search="$( get_input )"
+		search="$( get_input "wikipedia: ")"
 		firefox-bin --search --new-tab "${WIKIPEDIA}${search}"
 		;;	
 	"!layout change")
