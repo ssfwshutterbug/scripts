@@ -94,27 +94,27 @@ case $item in
 		;;
 	"!arch wiki")
 		search="$( get_input "arch wiki: ")"
-		firefox-bin --search --new-tab "${ARCHWIKI}${search}"
+		[ -z "$search" ] || firefox-bin --search --new-tab "${ARCHWIKI}${search}"
 		;;	
 	"!gentoo package")
 		search="$( get_input "gentoo package: ")"
-		firefox-bin --search --new-tab "${GENTOOPKG}${search}"
+		[ -z "$search" ] || firefox-bin --search --new-tab "${GENTOOPKG}${search}"
 		;;	
 	"!gentoo wiki")
 		search="$( get_input "gentoo wiki: ")"
-		firefox-bin --search --new-tab "${GENTOOWIKI}${search}"
+		[ -z "$search" ] || firefox-bin --search --new-tab "${GENTOOWIKI}${search}"
 		;;	
 	"!youtube")
 		search="$( get_input "youtube: ")"
-		firefox-bin --search --new-tab "${YOUTUBE}${search}"
+		[ -z "$search" ] || firefox-bin --search --new-tab "${YOUTUBE}${search}"
 		;;	
 	"!duckduckgo")
 		search="$( get_input "duckduckgo: ")"
-		firefox-bin --search --new-tab "${DUCKDUCKGO}${search}"
+		[ -z "$search" ] || firefox-bin --search --new-tab "${DUCKDUCKGO}${search}"
 		;;	
 	"!wikipedia")
 		search="$( get_input "wikipedia: ")"
-		firefox-bin --search --new-tab "${WIKIPEDIA}${search}"
+		[ -z "$search" ] || firefox-bin --search --new-tab "${WIKIPEDIA}${search}"
 		;;	
 	"!layout change")
 		change_layout
