@@ -9,18 +9,17 @@
 
 
 OPERATE=${1:-""}
-CHANGE=${2:-0}
-[ $CHANGE = 0 ] && exit 0
+CHANGE=${2:-2}
 
-ifmute=$(pamixer --get-mute)
-current=$(pamixer --get-volume)
+amixer sget Master |tail -n1 |rg off 1>/dev/null && ifmute="true"
+current=$(amixer sget Master |tail -n1 |cut -d'%' -f1 |cut -d'[' -f2)
 volume=$(expr $current $OPERATE $CHANGE)
 
-[ $ifmute = "true" ] && notify-send -u critical "Notice: sound has been muted" || ( \
-	pamixer --set-volume $volume && \
+[ "$ifmute" = "true" ] && notify-send -u critical "Notice: sound has been muted" || {
+	amixer sset Master ${CHANGE}%${OPERATE} 
 	notify-send -h string:frcolor:#d5cecb \
-		    -h int:value:$volume \
+		    -h int:value:${volume} \
 		    -h string:x-dunst-stack-tag:volume \
 		    "sound volume: ${volume}%" \
-		    -t 1000 \
-)
+		    -t 1000 
+}

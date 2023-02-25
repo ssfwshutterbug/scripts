@@ -10,42 +10,34 @@
 
 
 
-# define color variable for printing log info
-Red='\033[0;31m'
-End='\033[0m'
-
 # log function receive three parameters and print color message to terminal
 log () {
-	color=$1
-	info=$2
-	status=$3
-	[ "$color" = warn ] && echo " * $info ${Red} ${status} ${End}" >> $LOGFILE
+	msg=$1
+	echo " * $msg \033[0;31m error! \033[0" 
 }
 
-# receive args and define lock file position, and load configuration file
+
+# receive args and define lock file position
 # notice: the lock file cannot be put in /tmp directory. because /tmp filesystem 
 # is tmpfs, we cannot set attribute in this dir.
 WANNA_TO_DO=$1
+[ -z "$WANNA_TO_DO" ] && log "need start/stop parameter" && exit
 
 CONF="/etc/sync_anything.conf"
-[ -f "$CONF" ] && . $CONF || {
-    log "warn" "cannot find $CONF" "please check!" 
-    exit
-}
+[ ! -f "$CONF" ] && log "cannot find configuration file" && exit || . $CONF
+
 HOME="/home/$USER"
 SYNCED_DIR="$HOME/.cache/sync_anything"
 SYNCED_FILE="$HOME/.cache/sync_anything/sync_anything.lock"
-LOGFILE="$HOME/.cache/sync_anything/sync_anything.log"
 
-# check args
-[ -z "$WANNA_TO_DO" ] && log "warn" "this script should run with parameter" "check again please!" && exit
+
 # check /tmp file system
 findmnt /tmp 1>/dev/null 2>&1 || {
-    log "warn" "directory /tmp is not tmpfs, there is no sense to run the service" "abort!"
+    log "/tmp must be a tmpfs filesystem"
     exit
 }
 
-# check the path which will be synced is valid or not
+# check source path which will be synced is valid or not
 check_source_path () {
 	for source in $WANNA_TO_SYNC
 	do
