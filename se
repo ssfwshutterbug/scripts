@@ -1,0 +1,19 @@
+#!/bin/sh
+
+
+# path to search 
+config="$HOME/.config"
+note="$HOME/public/note"
+script="$HOME/.local/usr"
+code="$HOME/public/code"
+
+
+# find all files under the path and send to fzf
+# if choose a file then edit with default editor
+fd . -tf -H --search-path $config \
+            --search-path $note \
+            --search-path $script \
+            --search-path $code \
+			--exclude ".oh-my-zsh" \
+            | fzf \
+            | xargs -r $EDITOR

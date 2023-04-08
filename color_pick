@@ -8,4 +8,4 @@
 #                          |_|                         
 
 
-xcolor -s primary && dunstify 'color stores in clipboard'
+xcolor |xclip -sel primary -sel clip && dunstify 'color stores in clipboard'
