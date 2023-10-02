@@ -8,12 +8,14 @@ script="$HOME/.local/usr"
 code="$HOME/public/code"
 
 
-# find all files under the path and send to fzf
+# find all files under the path and send to skim
 # if choose a file then edit with default editor
-fd . -tf -H --search-path $config \
+select=$(fd . -H --search-path $config \
             --search-path $note \
             --search-path $script \
             --search-path $code \
 			--exclude ".oh-my-zsh" \
-            | fzf \
-            | xargs -r $EDITOR
+			--exclude ".note" \
+            | sk --reverse --height 50%)
+
+[ ! -z "$select" ] && $EDITOR $select

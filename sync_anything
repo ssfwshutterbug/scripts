@@ -56,10 +56,13 @@ get_path_info () {
 	source_path="$1"
 	source_dir="$(dirname $source_path)"
 	source_base="$(basename $source_path)"
+
 	fixed_source_path="${source_dir}/${source_base}"
+
 	uniq_code="$(echo $fixed_source_path |shasum |cut -d' ' -f1)"
 	dest_path="/tmp/${source_base}-${uniq_code}"
 	dest_path_sync="${dest_path}/${source_base}"
+
 	echo "$fixed_source_path $dest_path $dest_path_sync"
 }
 
@@ -115,17 +118,19 @@ unsync_file () {
 			log "warn" "umount $fixed_source_path failed," "please check!"
             exit
         }
-		[ -f $fixed_source_path ] && {
+
+		[ -f "$dest_path_sync" ] && {
 			rsync -ltpogu --remove-source-files "${dest_path_sync}" $fixed_source_path
 			rm -r "$dest_path" 
         }
-		[ -d $fixed_source_path ] && {
+
+		[ -d "$dest_path_sync" ] && [ "$(ls -a $dest_path_sync |wc -l)" -gt 2 ] && {
 			rsync -au --remove-source-files --delete-after "${dest_path_sync}/" $fixed_source_path
 			rm -r "$dest_path"
         }
 	done < $SYNCED_FILE
 	chattr -i "$SYNCED_FILE"
-	rm "$SYNCED_FILE" 
+	rm -f "$SYNCED_FILE"
 }
 
 # main function
@@ -136,13 +141,15 @@ case $WANNA_TO_DO in
 
 		# check whether the lock&log file exists, if true then cannot run it again
 		# need to stop it fist and then start it
-		[ -f "$SYNCED_FILE" ] && 
-            log "warn" "sync_anything is already running." "please stop it first!" || touch $SYNCED_FILE
-        [ -f "$LOGFILE" ] || touch $LOGFILE
+		[ ! -f "$SYNCED_FILE" ] && touch $SYNCED_FILE || {
+            log "warn" "sync_anything is already running." "please stop it first!"
+			exit
+		}
 		check_source_path
 		sync_file
 	;;
 	"stop")
+		[ ! -f "$SYNCED_FILE" ] && exit
 		unsync_file
 	;;
 	"*")

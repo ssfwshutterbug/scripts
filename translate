@@ -14,4 +14,5 @@ data=$( timeout 4 curl -s -X POST -d "q=${query}" https://aidemo.youdao.com/tran
 result=$( echo $data |jq '.translation' |jq '.[]' )
 
 # send result to dunst
-dunstify "$result"
+notify-send "$result"
+#dunstify "$result"
