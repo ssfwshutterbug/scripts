@@ -1,0 +1,3 @@
+#!/bin/sh
+
+nvim ~/.local/usr/data/content

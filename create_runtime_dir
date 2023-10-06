@@ -1,0 +1,11 @@
+#!/bin/sh
+
+
+
+# manually create runtime user dir which seatd will not create
+username=mandalorian
+XDG_RUNTIME_DIR=/run/user/$(id -u $username)
+
+[ ! -d $XDG_RUNTIME_DIR ] && mkdir -p $XDG_RUNTIME_DIR &&
+chmod 700 $XDG_RUNTIME_DIR  &&
+chown $username:$username $XDG_RUNTIME_DIR

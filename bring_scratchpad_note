@@ -1,0 +1,16 @@
+#!/bin/sh
+
+
+scratchpad_note=my_s_note
+note_file="~/.local/usr/data/content"
+
+# cause hyprctl command cannot execute nvim with file name(don't know why), so wirte another scirpt
+open_scratchpad_file="~/.local/usr/bin/open_scratchpad_file"
+
+if ps -ef |rg -v rg |rg $scratchpad_note
+then
+    hyprctl dispatch togglespecialworkspace $scratchpad_note
+else
+    hyprctl dispatch -- exec footclient --title $scratchpad_note sh -c open_scratchpad_file
+fi
+
