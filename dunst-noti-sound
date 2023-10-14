@@ -1,3 +1,0 @@
-#!/bin/bash
-
-[ `which mpv` ] &>/dev/null && mpv --volume=70  ~/public/sound/mixkit-message-pop-alert-2354.mp3 &>/dev/null
