@@ -1,0 +1,46 @@
+#/bin/sh
+
+
+
+# define a function to adjust gpu fan speed
+ch_gpu_fan () {
+    # get fan speed from command line, fan speed is percentage
+    fan_speed=$1 
+    [ -z "$fan_speed" ] && echo "need specify fan speed" && exit
+
+    enable_or_not=$(ls /sys/class/drm/card?/device/hwmon/hwmon?/pwm?_enable)
+    adjust_speed=$(ls /sys/class/drm/card?/device/hwmon/hwmon?/pwm?)
+
+    # check manually gpu fan control enable or not, 1 is enabled
+    status=$(cat $enable_or_not)
+
+    # enable gpu fan manually control
+    [ "$status" -eq 1 ] || echo "1" > $enable_or_not
+
+    # change fan speed, convert percentage speed to real control number
+    speed_num=$((256 * $fan_speed / 100))
+    echo "$speed_num" > $adjust_speed
+}
+
+
+# the unit is m.C, so need to devide 1000
+# while loop to access tmp and adjust with 30s delay
+while :
+do
+    amd_gpu_tmp=$(cat /sys/class/hwmon/hwmon0/temp1_input)
+    amd_gpu_tmp=$(expr $(($amd_gpu_tmp / 1000)))
+
+    # wait 60s
+    sleep 60
+
+    # adjust fan speed
+    [ $amd_gpu_tmp -gt 100 ] &&  ch_gpu_fan 100 && continue
+    [ $amd_gpu_tmp -gt 90 ]  &&  ch_gpu_fan 80 && continue
+    [ $amd_gpu_tmp -gt 80 ]  &&  ch_gpu_fan 70 && continue
+    [ $amd_gpu_tmp -gt 70 ]  &&  ch_gpu_fan 60 && continue
+    [ $amd_gpu_tmp -gt 60 ]  &&  ch_gpu_fan 50 && continue
+    [ $amd_gpu_tmp -gt 50 ]  &&  ch_gpu_fan 40 && continue
+    [ $amd_gpu_tmp -gt 40 ]  &&  ch_gpu_fan 30 && continue
+    [ $amd_gpu_tmp -gt 30 ]  &&  ch_gpu_fan 20 && continue
+    [ $amd_gpu_tmp -gt 20 ]  &&  ch_gpu_fan 10 && continue
+done

@@ -1,0 +1,25 @@
+#/bin/sh
+
+
+
+# define a function to adjust gpu fan speed
+ch_gpu_fan () {
+    # get fan speed from command line, fan speed is percentage
+    fan_speed=$1 
+    [ -z "$fan_speed" ] && echo "need specify fan speed" && exit
+
+    enable_or_not=$(ls /sys/class/drm/card?/device/hwmon/hwmon?/pwm?_enable)
+    adjust_speed=$(ls /sys/class/drm/card?/device/hwmon/hwmon?/pwm?)
+
+    # check manually gpu fan control enable or not, 1 is enabled
+    status=$(cat $enable_or_not)
+
+    # enable gpu fan manually control
+    [ "$status" -eq 1 ] || echo "1" > $enable_or_not
+
+    # change fan speed, convert percentage speed to real control number
+    speed_num=$((256 * $fan_speed / 100))
+    echo "$speed_num" > $adjust_speed
+}
+
+ch_gpu_fan

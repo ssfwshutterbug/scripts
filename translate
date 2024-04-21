@@ -8,10 +8,15 @@ query=$( echo $@ |tr -d '#\n' )
 mpv --really-quiet --volume=60 http://dict.youdao.com/dictvoice\?audio\="${query}" &>/dev/null  &
 
 # use api to query translate result
-data=$( timeout 4 curl -s -X POST -d "q=${query}" https://aidemo.youdao.com/trans )
+#data=$( timeout 4 curl -s -X POST -d "q=${query}" https://aidemo.youdao.com/trans )
+# note:
+# the api cannot use anymore, so now use google translate api
+query=$(echo $query |tr ' ' '%')
+data=$(timeout 4 curl -s --proxy 127.0.0.1:9050 "https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=zh&dt=t&q=${query}")
 
 # use jq to find final result
-result=$( echo $data |jq '.translation' |jq '.[]' )
+# result=$( echo $data |jq '.translation' |jq '.[]' )
+result=$(echo $data |cut -d '"' -f2)
 
 # send result to dunst
 notify-send "$result"
