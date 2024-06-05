@@ -1,0 +1,16 @@
+#!/bin/bash
+
+
+# note: 
+# this srcipt only used to set wallpaper by imv, in which case you can set a shortcut in your favorate
+# window manager to lanch imv and press *m* in you liked picture, then it will use swww/wbg to set this
+# picture as desktop wallpaper.
+
+
+# use wbg or iwww to set wallpaper, deponds on what you have.
+. <((which swww >/dev/null && echo 'tool="swww img"') || (which wbg > /dev/null && echo tool=wbg))
+
+file_name=$(echo ~/public/picture/background/ |imv)
+[ -f $file_name ] && {
+    killall $tool && eval "$tool $file_name" || eval "$tool $file_name"
+}

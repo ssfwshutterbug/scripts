@@ -17,7 +17,7 @@ FILENAME=$0
 # of each time to query current brightness with `sudo ddcutil getvcp 10`
 # the benefit of doing this is that query brightness needs lots of time
 # which will leads to the notify shows delayed.
-current=12
+current=11
 brightness=$(expr $current $OPERATE $VALUE)
 [ "$brightness" -ge 0 ] && sed -i "/^current/c current=${brightness}" $FILENAME
 

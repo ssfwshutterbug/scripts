@@ -1,8 +1,0 @@
-#/bin/sh
-
-
-
-file_name=$(echo ~/public/picture/background/ |imv)
-[ -f $file_name ] && {
-    killall wbg && wbg $file_name || wbg $file_name &
-}

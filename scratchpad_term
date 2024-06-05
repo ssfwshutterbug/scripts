@@ -1,0 +1,13 @@
+#!/bin/sh
+
+
+title="drop_term"
+
+
+if ps -ef |rg -v rg |rg $title
+then
+    hyprctl dispatch togglespecialworkspace $title
+else
+    hyprctl dispatch -- exec footclient --title $title
+fi
+

@@ -1,0 +1,8 @@
+#!/bin/dash
+
+
+while true
+do
+    pidof firefox >/dev/null || doas simplesync --stop
+    sleep 2
+done

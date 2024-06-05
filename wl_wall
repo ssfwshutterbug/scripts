@@ -1,0 +1,137 @@
+#!/bin/dash
+
+# this script used to automatically change wallpaper using swww/or can use a static image file but in
+# this way it will not automatically change the wallpaper, and use "wal" aka python-pywal to
+# generate color scheme for waybar to read. Cause *wal* can specify dark/light scheme, so this script
+# will use a parameter to change that.
+
+# check dependences
+deps="swww-daemon swww wal fd jq curl wget"
+for i in $(echo $deps); do
+	which $i >/dev/null || {
+		echo "need install $i first!" && exit 1
+	}
+done
+
+# at first we need to make sure swww-daemon is running.
+pgrep swww-daemon >/dev/null || {
+	#echo "need run swww-daemon first" && exit 1
+	swww-daemon &
+}
+
+# get and set some variables
+SCRIPT_NAME=$(basename $0)
+WALLPAPER_DIR=$HOME/public/picture/background
+IMG_FILE=""
+INTERVAL=900
+LEN_PARA=$#
+UNSPLASH="https://api.unsplash.com/photos/random?client_id=hXQTv7k4nzXZTDxn-_Gg-akObGlC1D7phd6n20YgtDU&count=1&orientation=landscape"
+TMP_DIR="/tmp"
+CURRENT_PID=$$
+MODE=""
+
+# show help message
+help() {
+	cat <<EOF
+usage: wl_change_wallpaper [OPTION] [PICTURE_DIR]
+
+    without specify wallpaper directory, we will use the default one: $WALLPAPER_DIR
+    without specify time, we will use the default one: $INTERVAL (seconds)
+
+    example: wl_wall -t 60 -d ~/background
+
+
+[OPTION]:
+    -h  show help message
+    -d  set wallpaper directory
+    -t  time (minutes) interval to change wallpaper
+    -n  get wallpaper from online(unsplash)
+    -l  get wallpaper from local folder
+    -s  save current online wallpaper to $WALLPAPER_DIR, used with -n
+    -b  use light color scheme for waybar to use, default use dark scheme
+    -f  specify a image file to use
+EOF
+}
+
+# check path exist or not
+check_path() {
+	[ ! -d $1 ] && echo "directory not exist!" && exit || WALLPAPER_DIR=$1
+}
+
+# kill exist process except current one
+kill_process() {
+	# for i in $(pgrep $SCRIPT_NAME); do
+	# more adaptable way
+	for i in $(ps -ef | rg wl_wall | rg -v nvim | rg -v rg | choose 1); do
+		# if no other needs to kill, also need to return 0 as a sign
+		[ $i != $CURRENT_PID ] && kill $i
+	done || return 0
+}
+
+# try to get wallpaper online, error fallback to use local picture
+set_wall_online() {
+	# if already exist tmp file, remove it
+	file=$(fd --type f "tmp.*" /tmp)
+	[ ! -z $file ] && echo $file | xargs rm
+
+	# create tmp file to store image url
+	TMP_FILE=$(mktemp)
+
+	while true; do
+		# clean /tmp folder existed photo
+		fd -t f photo /tmp | xargs rm
+
+		# write urls to temp file under /tmp
+		urls=$(curl -s "$UNSPLASH" | jq -r '.[].urls')
+		echo $urls >>$TMP_FILE
+
+		url=$(echo $urls | jq -r '.regular')
+		img_name=$(echo $url | cut -d'/' -f 4)
+		timeout 6 wget -q --show-progress $url --directory-prefix=$TMP_DIR
+
+		# generate color palate for waybar
+		wal -n -s $MODE --saturate 0.5 -i $TMP_DIR/$img_name
+		swww img $TMP_DIR/${img_name} || set_dy_wall
+		sleep ${INTERVAL:-900}
+	done
+}
+
+# set local dynamic wallpaper
+set_dy_wall() {
+	check_path $WALLPAPER_DIR
+	while true; do
+		img_name=$(ls $WALLPAPER_DIR | shuf -n 1)
+		img_path=${WALLPAPER_DIR}/${img_name}
+
+		# generate color palate for waybar
+		wal -n -s $MODE --saturate 0.5 -i $img_path
+
+		swww img $img_path
+		sleep ${INTERVAL:-900}
+	done
+}
+
+# set local static wallpaper, will not automatically change wallpaper
+set_st_wall() {
+	[ ! -f $IMG_FILE ] && echo "$IMG_FILE file does not exist" && exit 1
+	wal -n -s $MODE --saturate 0.5 -i $IMG_FILE
+	swww img $IMG_FILE
+}
+
+# get parameters if there is
+# i find this method is much more simple, but seems cannot use double -, for example: "--help"
+while getopts blhnt:d:s: f; do
+	case $f in
+	h) help && exit ;;
+	b) MODE="-l" ;;
+	t) INTERVAL=$(expr ${OPTARG} * 60) ;;
+	d) WALLPAPER_DIR=${OPTARG} ;;
+	n) kill_process && run=set_wall_online ;;
+	l) kill_process && run=set_dy_wall ;;
+	s) kill_process && IMG_FILE=${OPTARG} && run=set_st_wall ;;
+	esac
+done
+shift $((OPTIND - 1))
+
+# now execute
+eval $run

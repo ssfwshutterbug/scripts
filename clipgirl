@@ -1,0 +1,52 @@
+#!/bin/dash
+
+# This script can be called by wl-paste and bemenu to save and reselect copied text.
+# Main aim is give us a clipboard history ability. Why this name? Cause there is already
+# a program called clipman. But i wanna to write my own script, and here it comes.
+# To moniter the copy action, we use wl-paste's native ability to listen any copy action,
+# and run this script to save copied text, so we need wl-paste running in background.
+# wl-paste --watch clipgirl -s
+
+#CLIP_HISTORY=$HOME/.local/usr/data/clip_history
+CLIP_HISTORY=/tmp/clip_history
+# total saved clipboard lines
+LINE=50
+ARGS=$@
+
+help() {
+	cat <<EOF
+clipgirl [OPTION]
+
+    -s  --save      save clipboard content to a file
+    -l  --list      output saved clipboard content
+    -h  --help      show help
+EOF
+}
+
+clip_save() {
+	[ ! -d $(dirname $CLIP_HISTORY) ] && mkdir -p $(dirname $CLIP_HISTORY)
+	[ ! -f $CLIP_HISTORY ] && touch $CLIP_HISTORY
+
+	# use sed do magic work, always put new line in file's top
+	content=$(wl-paste)
+	echo $content >>$CLIP_HISTORY
+
+	line=$(wc -l $CLIP_HISTORY | awk '{print $1}')
+	# only works when lines > 1
+	[ $line -gt 1 ] && sed -i '1h;1d;$!H;$!d;G' $CLIP_HISTORY
+	[ $line -gt $LINE ] && sed -i '51,$d' $CLIP_HISTORY
+}
+
+clip_list() {
+	# cannot find out why copied two times into saved file. so do not display same content twice
+	cat $CLIP_HISTORY | rg -v '^$' | sed 'h;g;p' | uniq -d
+}
+
+for i in $ARGS; do
+	case $i in
+	-s | --save) clip_save ;;
+	-l | --list) clip_list ;;
+	-h | --help) help ;;
+	*) help ;;
+	esac
+done

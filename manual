@@ -6,4 +6,6 @@
 #|_| |_| |_|\__,_|_| |_|\__,_|\__,_|_|
                                      
 
-timeout 2 curl -s cht.sh/${1} || tldr ${1}
+# a better solution
+tldr $@
+#timeout 2 curl -s cht.sh/${1} || tldr ${1}
