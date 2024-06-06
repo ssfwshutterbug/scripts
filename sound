@@ -1,0 +1,7 @@
+#!/bin/dash
+
+
+tool="pipewire wireplumber"
+for i in $(echo $tool);do
+    pgrep $i >/dev/null || $i &
+done

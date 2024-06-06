@@ -1,33 +1,37 @@
 #!/bin/dash
 
-#  _          _       _     _                       
-# | |__  _ __(_) __ _| |__ | |_ _ __   ___  ___ ___ 
+#  _          _       _     _
+# | |__  _ __(_) __ _| |__ | |_ _ __   ___  ___ ___
 # | '_ \| '__| |/ _` | '_ \| __| '_ \ / _ \/ __/ __|
 # | |_) | |  | | (_| | | | | |_| | | |  __/\__ \__ \
 # |_.__/|_|  |_|\__, |_| |_|\__|_| |_|\___||___/___/
-#               |___/                               
+#               |___/
 
-# define variables, $0 stands for current filename which will be used
-# by sed.
 OPERATE=$1
 VALUE=${2:-2}
-FILENAME=$0
+FILE=/tmp/brightness.current
 
 # use sed change and store current brightness value instead
 # of each time to query current brightness with `sudo ddcutil getvcp 10`
 # the benefit of doing this is that query brightness needs lots of time
 # which will leads to the notify shows delayed.
-current=11
+
+[ ! -e $FILE ] && {
+	touch $FILE
+	ddcutil getvcp 10 | rg -o "current value .*," | choose 3 | tr -d "," >$FILE
+}
+
+current=$(cat $FILE)
 brightness=$(expr $current $OPERATE $VALUE)
-[ "$brightness" -ge 0 ] && sed -i "/^current/c current=${brightness}" $FILENAME
 
 # use dunst to show a status bar of brightness.
 notify-send -h string:frcolor:#d5cecb \
 	-h int:value:${brightness} \
 	-h string:x-dunst-stack-tag:brightness \
-    "brightness: ${brightness}" \
+	"brightness: ${brightness}" \
 	-t 1000
 
 # load module if not loaded yet and change brightness
-lsmod |rg i2c || doas modprobe i2c-dev
-doas ddcutil setvcp 10 $OPERATE $VALUE
+lsmod | rg i2c || doas modprobe i2c-dev
+ddcutil setvcp 10 $OPERATE $VALUE
+echo $brightness >$FILE
