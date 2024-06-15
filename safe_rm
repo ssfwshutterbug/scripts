@@ -1,0 +1,16 @@
+#!/bin/sh
+
+PARAMETERS=$@
+args=""
+list=""
+
+for i in $(echo $PARAMETERS); do
+    if [ -d "$i" -o -f "$i" ]; then
+        cp -r $i /tmp/ && echo -e "\e[45m $i moved to /tmp/ \e[0m"
+        list="$list $i"
+    else
+        args="$args $i"
+    fi
+done
+
+rm $args -I --one-file-system $list

@@ -1,0 +1,25 @@
+#!/bin/sh
+
+# Redirect all output to /dev/null
+exec >/dev/null 2>&1
+
+pgrep swww-daemon || swww-daemon &
+pgrep foot || foot --server &
+pgrep mihomo || mihomo -d ~/.config/mihomo/ &
+pgrep polkit || /usr/lib/polkit-kde-authentication-agent-1 &
+
+# pipewire and wireplumber needs restart every logout, otherwise there is a problem.
+pkill pipewire
+pipewire &
+pkill wireplumber
+wireplumber &
+
+pgrep wl-paste || wl-paste --type text --watch clipgirl -s &
+pgrep fcitx5 || fcitx5 &
+pgrep -f auto_change_gpu_fan || doas auto_change_gpu_fan &
+pgrep wl_wall || wl_wall -l &
+pgrep easyeffects || easyeffects --gapplication-service -l m-dolby &
+pgrep waybar || waybar &
+
+# only dwl needs manually start dunst
+pgrep dwl && dunst &
