@@ -7,7 +7,7 @@ pgrep swww-daemon >/dev/null || swww-daemon &
 
 # get and set some variables
 SCRIPT_NAME=$(basename $0)
-WALLPAPER_DIR=$HOME/public/picture/background
+WALLPAPER_DIR=$HOME/daisy/picture/background
 INTERVAL=900
 LEN_PARA=$#
 UNSPLASH="https://api.unsplash.com/photos/random?client_id=hXQTv7k4nzXZTDxn-_Gg-akObGlC1D7phd6n20YgtDU&count=1&orientation=landscape"

@@ -1,8 +1,8 @@
 #!/bin/dash
 
 COLORS="$HOME/.local/share/colors"
-HEXODIR="$HOME/public/myweb/source/_posts"
-SOURCEDIR="$HOME/public/note"
+HEXODIR="$HOME/daisy/myweb/source/_posts"
+SOURCEDIR="$HOME/daisy/note"
 UPDATED=""
 NEW=""
 HEXO="$HOME/.local/share/npm/bin/hexo"

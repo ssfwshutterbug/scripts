@@ -10,9 +10,9 @@
 # specify download tmp location
 tmp_dir="/tmp"
 # sepcify store location
-default_dir="${HOME}/public/pictures/background"
+default_dir="${HOME}/daisy/pictures/background"
 # specify default picture local dir
-default_pic="${HOME}/public/pictures/background/splash.png"
+default_pic="${HOME}/daisy/pictures/background/splash.png"
 # specify bing image gallery api
 api="https://cn.bing.com/hp/api/v1/imagegallery?format=json"
 # specify dynamic change time
