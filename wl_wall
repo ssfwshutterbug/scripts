@@ -60,7 +60,7 @@ check_path() {
 
 wallpaper() {
     file=$1
-    swww img -t wipe $file
+    swww img $file
 }
 
 # kill exist process except current one
