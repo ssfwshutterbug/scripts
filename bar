@@ -1,0 +1,55 @@
+#!/bin/sh
+
+[ "$1" = "" -o "$2" = "" ] && exit
+
+color=${1:-blue}
+case $color in
+"black") ccode=30 ;;
+"red") ccode=31 ;;
+"green") ccode=32 ;;
+"yellow") ccode=33 ;;
+"blue") ccode=34 ;;
+"gray") ccode=36 ;;
+"deepred") ccode=91 ;;
+"deepgreen") ccode=92 ;;
+"deepblue") ccode=93 ;;
+"pink") ccode=95 ;;
+esac
+
+# leave_len is the text length exist
+# emptyNum is the empty blank length, calculate automatically
+leave_len=$2
+width=$(tput cols)
+emptyNum=$(echo "$width - $leave_len" | bc)
+charPercent=$3
+
+# convert x% => 0.xx
+if [ $(echo $charPercent | rg '%') ]; then
+    charPercent=$(echo $charPercent | tr -d '%')
+    charPercent=$(echo "scale=2;$charPercent / 100" | bc)
+fi
+
+# if charPercent >= 1, use 1 instead
+[ $(echo "$charPercent / 1" | bc) -ge 1 ] && charPercent=1
+
+# join character
+genChar() {
+    num=$1
+    char=$2
+    for i in $(seq 1 $num); do
+        chars="$chars""$char"
+    done
+    echo "$chars"
+}
+
+# calculate character count, make sure both are integer
+charNum=$(echo "scale=0;$charPercent * $emptyNum / 1" | bc)
+blankNum=$(echo "$emptyNum - $charNum" | bc)
+
+activeChar=$(genChar "$charNum" '')
+blankChar=$(genChar "$blankNum" '')
+
+# convert charPercent from decimal 0.xx to percentage x%
+charPercent=$(echo "$charPercent * 100 / 1" | bc)
+
+echo -e "\033[${ccode}m${activeChar}\033[0m\033[30m${blankChar}\033[0m \033[${ccode}m${charPercent}%\033[0m"

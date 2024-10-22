@@ -1,0 +1,97 @@
+#!/bin/sh
+# rename directory which contains blankspace to dash(-) connected format
+# example: 'Nobody (2021) [1080p]' => Nobody-2021-1080p
+
+NAME="$@"
+# handy software, colorize is the one of my own golang program
+dependence="sd choose colorize"
+
+checkDependence() {
+    for i in $(echo "$dependence")
+    do
+        which $i &>/dev/null || {
+            echo "$i doesn't exists"
+            exit 1
+        }
+    done
+}
+
+formatDotFile() {
+    name="$1"
+
+    prefix="$(echo "$name" |choose -f '\.' :-2)"
+    suffix="$(echo "$name" |choose -f '\.' -1:)"
+    fix_prefix="$(echo "$prefix" |
+        sd '\W+' '-' |
+        sd '_' '-' |
+        # remove begining and ending special character if exists
+        sd '\W+$' ''|
+        sd '^\W+' '')"
+    fix_name="${fix_prefix}.${suffix}"
+
+    echo "$fix_name"
+}
+
+formatDotDir() {
+    name="$1"
+
+    fix_name="$(echo "$name" |
+        sd '\W+' '-' |
+        sd '_' '-' |
+        sd '\W+$' ''|
+        sd '^\W+' '')"
+
+    echo "$fix_name"
+}
+
+formatDir() {
+    name="$1"
+    fix_name="$(echo "$name" |
+        sd '\W+' '-' |
+        sd '_' '-' |
+        sd '\W+$' '')"
+
+    echo "$fix_name"
+}
+
+# when format a file
+formatItem() {
+    name="$1"
+
+    if [ -f "$name" ];then
+        # if suffix contains dot, spilt from there eg: "happy_life.mp4" => "happy_life" "mp4"
+        if echo "$name" |rg '\.\w+\d*$' &>/dev/null ;then
+            fix_name="$(formatDotFile "$name")"
+        else
+            fix_name="$(formatDotDir "$name")"
+        fi
+    # when format a directory, no dot end
+    elif [ -d "$name" ];then
+        fix_name="$(formatDir "$name")"
+    else
+        echo "path in not correct"
+        exit 1
+    fi
+
+    echo "$fix_name"
+}
+
+renameItem(){
+    name="$1"
+    fix_name="$2"
+
+    # linux read has no prompt, but we can use printf to print something without expend a new line(kind of trick)
+    colorize -fg "#ff9e00" "$name" $(colorize -fg "#3a86ff" " ") $(colorize -fg "#f72585" "$fix_name")
+    printf "$(colorize -fg "#99d98c" "is it ok? [y|n|yes|no]: ")"; read -r answer
+
+    if [ "$answer" = "y" -o "$answer" = "yes" ];then
+        mv "$name" "$fix_name"
+        printf "$(colorize -fg "#99d98c" "renamed: ")"; ls "$fix_name"
+    elif [ "$answer" = "n" -o "$answer" = "no" ]; then
+        colorize -fg "#ffc300" "discard"
+    fi
+}
+
+checkDependence
+fix_name="$(formatItem "$NAME")"
+renameItem "$NAME" "$fix_name"

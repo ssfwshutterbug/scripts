@@ -1,0 +1,10 @@
+#!/bin/sh
+
+FILE=/tmp/.cpu_usage.current
+
+while true; do
+    cpu_usage=$(top -bn1 | rg -o 'load average:.*' | cut -d ',' -f1 | cut -d ' ' -f3)
+    echo $cpu_usage >$FILE
+
+    sleep 5
+done

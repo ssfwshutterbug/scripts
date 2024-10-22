@@ -1,0 +1,129 @@
+#!/bin/sh
+
+textLen=50
+barLen=40
+
+# render function will not create new line
+render() {
+    line=$@
+    prompt=$(echo $line |cut -d: -f1)
+    content=$(echo $line |cut -d: -f2-)
+
+    printf "%-${textLen}b \t %s" "\e[1;32m${prompt}:\e[0m\e[1;37m$content\e[0m"
+}
+
+blank() {
+    echo ""
+}
+
+fetchGpuTmp() {
+    tmp_path=$(dirname $(rg amdgpu /sys/class/hwmon/hwmon*/name))
+    amd_gpu_tmp=$(cat $tmp_path/temp1_input)
+    amd_gpu_tmp=$(expr $amd_gpu_tmp / 1000)
+    render "GPU TEMPERATURE: ${amd_gpu_tmp}°C"
+
+    percent=$(echo "scale=2;$amd_gpu_tmp / 100" |bc)
+    gobar "#0c7694" $barLen $percent
+}
+
+fetchCpuTmp() {
+    tmp_path=$(dirname $(rg k10temp /sys/class/hwmon/hwmon*/name))
+    amd_cpu_tmp=$(cat $tmp_path/temp1_input)
+    amd_cpu_tmp=$(expr $amd_cpu_tmp / 1000)
+    render "CPU TEMPERATURE: $amd_cpu_tmp°C"
+
+    percent=$(echo "scale=2;$amd_cpu_tmp / 100" |bc)
+    gobar "#0c7694" $barLen $percent
+}
+
+fetchCpuUsg() {
+    if [ -f /tmp/.cpu_usage.current ];then
+        core=$(rg 'cpu\d' /proc/stat | wc -l)
+        cpu_usage=$(cat /tmp/.cpu_usage.current)
+        render "CPU USAGE: $cpu_usage"
+
+        percent=$(echo "scale=2; $cpu_usage / $core" |bc)
+        gobar "#0c7694" $barLen $percent
+    fi
+}
+
+fetchCpuVender() {
+    vender=$(rg 'model name' /proc/cpuinfo | head -n1 | cut -d: -f2)
+    render "CPU:$vender"
+}
+
+fetchKernel() {
+    kernel=$(cut -d ' ' -f3,4 /proc/version)
+    render "KERNEL: $kernel"
+    echo -e "\r"
+}
+
+fetchPkg() {
+    which pacman &>/dev/null && {
+        pkg=$(pacman -Q | wc -l)
+        render "PACKAGE: $pkg"
+    }
+
+    # use 1000 pkg as the total number
+    percent=$(echo "scale=2;$pkg / 1000" |bc)
+    gobar "#0c7694" $barLen $percent
+}
+
+fetchDate() {
+    date=$(date "+%Y-%m-%d %T")
+    render "TIME: $date"
+
+    hour=$(date "+%H")
+    minute=$(date "+%M")
+    minutes=$(echo "$hour * 60 + $minute" |bc)
+    percent=$(echo "scale=2;$minutes / 1440" |bc)
+    gobar "#993366" $barLen $percent
+}
+
+fetchVolume() {
+    if text=$(amixer sget Master 2>/dev/null);then
+        volume=$(echo $text |rg -o '\d+%' |sed -n '1p')
+        render "VOLUME: $volume"
+
+        volume=$(echo $volume |tr -d '%')
+        percent=$(echo "scale=2;$volume / 100" |bc)
+        gobar "#0c7694" $barLen $percent
+    fi
+}
+
+fetchBrightness() {
+     if [ -f /tmp/.brightness.current ];then
+         brightness=$(cat /tmp/.brightness.current)
+     else
+         brightness=$(ddcutil getvcp 10 | rg -o "current value .*," |rg -o '\d')
+     fi
+
+     render "BRIGHTNESS: $brightness"
+
+    percent=$(echo "scale=2;$brightness / 100" |bc)
+    gobar "#0c7694" $barLen $percent
+}
+
+fetchMemory() {
+    total=$(rg 'MemTotal:' /proc/meminfo |awk '{print $2}')
+    avail=$(rg 'MemAvailable:' /proc/meminfo |awk '{print $2}')
+
+    used=$(printf "%.2f" $(echo "scale=2; ($total - $avail) / 1024000" |bc))
+    total=$(echo "scale=1; $total / 1024000" |bc)
+
+    render "MEMORY: ${used}G / ${total}G"
+
+    percent=$(echo "scale=2;$used / $total" |bc)
+    gobar "#0c7694" $barLen $percent
+}
+
+fetchKernel
+fetchDate
+fetchCpuUsg
+fetchMemory
+fetchCpuTmp
+fetchGpuTmp
+fetchBrightness
+fetchVolume
+#fetchCpuVender
+#fetchPkg

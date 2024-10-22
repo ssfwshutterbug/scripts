@@ -1,0 +1,182 @@
+#!/bin/sh
+# rename file/directory which contains space and special char to dash(-) connected format
+# example: 'Nobody (2021) [1080p]' => Nobody-2021-1080p
+
+NAME="$@"
+LENGTH="$#"
+# handy software, colorize is the one of my own golang program
+dependence="sd choose colorize"
+
+checkDependence() {
+    for i in $(echo "$dependence")
+    do
+        which $i &>/dev/null || {
+            echo "$i doesn't exists"
+            exit 1
+        }
+    done
+}
+
+# only accept one single item or multiple items but begins with ./
+# which can use ./* match all the items, and the program will filter
+# the one that contains special characters or space or both.
+checkParameter() {
+    name="$1"
+
+    if [ $LENGTH -gt 1 ];then
+        if ! echo "$name" |rg '^./' &>/dev/null; then
+            printf "usage: format_name filename\n \
+      format_name ./filename\n \
+      format_name ./filename1 ./filename2\n \
+      format_name ./*\n"
+            exit 1
+        fi
+    fi
+}
+
+formatDotFile() {
+    name="$1"
+
+    prefix="$(echo "$name" |choose -f '\.' :-2)"
+    suffix="$(echo "$name" |choose -f '\.' -1:)"
+    fix_prefix="$(echo "$prefix" |
+        sd '\W+' '-' |
+        sd '_' '-' |
+        # remove begining and ending special character if exists
+        sd '\W+$' ''|
+        sd '^\W+' '')"
+    fix_name="${fix_prefix}.${suffix}"
+
+    echo "$fix_name"
+}
+
+formatDotDir() {
+    name="$1"
+
+    fix_name="$(echo "$name" |
+        sd '\W+' '-' |
+        sd '_' '-' |
+        sd '\W+$' ''|
+        sd '^\W+' '')"
+
+    echo "$fix_name"
+}
+
+formatDir() {
+    name="$1"
+    fix_name="$(echo "$name" |
+        sd '\W+' '-' |
+        sd '_' '-' |
+        sd '\W+$' ''|
+        sd '^\W+' '')"
+
+    echo "$fix_name"
+}
+
+# check item type and choose correct format function
+formatItem() {
+    name="$1"
+
+    if [ -f "$name" ];then
+        # if suffix contains dot, spilt from there eg: "happy_life.mp4" => "happy_life" "mp4"
+        if echo "$name" |rg '\.\w+\d*$' &>/dev/null ;then
+            fix_name="$(formatDotFile "$name")"
+        else
+            fix_name="$(formatDotDir "$name")"
+        fi
+    elif [ -d "$name" ];then
+        fix_name="$(formatDir "$name")"
+    else
+        echo "filename/dirname is not correct"
+        exit 1
+    fi
+
+    echo "$fix_name"
+}
+
+# use colorized text show how it will be changed
+showChanges() {
+    name="$1"
+    fix_name="$2"
+
+    colorize -fg "#ff9e00" "$name" $(colorize -fg "#3a86ff" " ") $(colorize -fg "#f72585" "$fix_name")
+}
+
+# depends on user's choice, rename or not
+readChoice() {
+    printf "$(colorize -fg "#99d98c" "is it ok? [y|n|yes|no]: ")"; read -r answer
+}
+
+# if name begins with ./ and name is the same, no need to change
+checkItem() {
+    name="$1"
+    fix_name="$2"
+
+    trimname="$(echo "$name" | sd './' '')"
+    [ "$fix_name" = "$trimname" ] && echo "same" || echo "different"
+}
+
+# do the real rename operation
+renameItem(){
+    answer="$1"
+    name="$2"
+    fix_name="$3"
+
+    if [ "$answer" = "y" -o "$answer" = "yes" ];then
+        mv "$name" "$fix_name"
+        printf "$(colorize -fg "#99d98c" "renamed: ")"; echo "$fix_name"
+    elif [ "$answer" = "n" -o "$answer" = "no" ]; then
+        colorize -fg "#ffc300" "discard"
+    fi
+}
+
+
+# if receive multiple files, must has this format: ./file_name ./*
+# otherwise will not work
+main() {
+    NAMES="$1"
+    
+    # name begins with ./, assume has multiple items
+    if echo "$NAMES" |rg '^./' &>/dev/null; then
+        for i in $(seq 1 $LENGTH); do
+            name="$(echo "$NAMES" | sd ' ./' "\n./" | sed -n "${i}p")"
+            fix_name="$(formatItem "$name")"
+            status="$(checkItem "$name" "$fix_name")"
+
+            if [ "$status" = "different" ];then
+                showChanges "$name" "$fix_name"
+            fi
+
+            statusT="$statusT $status"
+        done
+
+        # if no one is different, then no need to change
+        if echo "$statusT" |rg -o "different" &>/dev/null;then
+            readChoice
+        else
+            echo "no need to change"
+            exit 1
+        fi
+
+        for i in $(seq 1 $LENGTH); do
+            name="$(echo "$NAMES" | sd ' ./' "\n./" | sed -n "${i}p")"
+            fix_name="$(formatItem "$name")"
+            status="$(checkItem "$name" "$fix_name")"
+
+            if [ "$status" = "different" ];then
+                renameItem $answer "$name" "$fix_name"
+            fi
+        done
+
+    # otherwise assume only one file
+    else
+        fix_name="$(formatItem "$NAMES")"
+        showChanges "$NAMES" "$fix_name"
+        readChoice
+        renameItem $answer "$NAMES" "$fix_name"
+    fi
+}
+
+checkDependence
+checkParameter "$NAME"
+main "$NAME"

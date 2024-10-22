@@ -1,0 +1,13 @@
+#!/bin/sh
+
+hour=$(expr $((3600 * 3)))
+
+while true; do
+    # home
+    curl -s 'https://wttr.in/~110.22,30.52?format=%c+%t+(feel:+%f)' | tr -s ' ' | tr -d '+' >/tmp/.weather.today
+    # shenzhen baoan
+    #curl -s 'https://wttr.in/~22.5580925,113.8789746?format=%c+%t+(feel:+%f)' | tr -s ' ' | tr -d '+' >/tmp/.weather.today
+    # curl -s 'https://wttr.in/\~baoan?format=%c+%t+(feel:+%f)' | tr -s ' ' | tr -d '+' >/tmp/.weather.today
+    #curl -s 'https://wttr.in/\~baoan?format=1' | tr -s ' ' >/tmp/.weather.today
+    sleep $hour
+done
