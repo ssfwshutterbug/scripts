@@ -3,7 +3,6 @@
 # Redirect all output to /dev/null
 exec >/dev/null 2>&1
 
-pgrep swww-daemon || swww-daemon &
 pgrep foot || foot --server &
 pgrep mihomo || mihomo -d ~/.config/mihomo/ &
 pgrep polkit || /usr/lib/polkit-kde-authentication-agent-1 &
@@ -15,11 +14,17 @@ pkill wireplumber
 wireplumber &
 
 pgrep wl-paste || wl-paste --type text --watch clipgirl -s &
-pgrep fcitx5 || fcitx5 &
 pgrep -f auto_change_gpu_fan || doas auto_change_gpu_fan &
-pgrep wl_wall || wl_wall -l &
 pgrep easyeffects || easyeffects --gapplication-service -l m-dolby &
-pgrep waybar || waybar &
+pgrep waybar || WAYLAND_DISPLAY=wayland-1 waybar &
+#pgrep weather || weather &
+pgrep cpu_usage || cpu_usage &
+change_brightness & # get current brightness
+#pgrep swww-daemon || swww-daemon &
+pgrep wl_wall || wl_wall -n &
+#pgrep fcitx5 || fcitx5 &
+#pgrep eww || eww daemon && eww open bar
+#pgrep someblocks || someblocks &
 
 # only dwl needs manually start dunst
-pgrep dwl && dunst &
+pgrep dwl && { pgrep dunst || dunst & }

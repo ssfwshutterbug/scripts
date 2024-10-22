@@ -39,20 +39,19 @@ do
         before=$amd_gpu_tmp
 
         [ $amd_gpu_tmp -gt 100 ] &&  ch_gpu_fan 100 && sleep $TIME && continue
-        [ $amd_gpu_tmp -gt 95 ]  &&  ch_gpu_fan 85  && sleep $TIME && continue
-        [ $amd_gpu_tmp -gt 90 ]  &&  ch_gpu_fan 80  && sleep $TIME && continue
-        [ $amd_gpu_tmp -gt 85 ]  &&  ch_gpu_fan 75  && sleep $TIME && continue
-        [ $amd_gpu_tmp -gt 80 ]  &&  ch_gpu_fan 70  && sleep $TIME && continue
-        [ $amd_gpu_tmp -gt 75 ]  &&  ch_gpu_fan 65  && sleep $TIME && continue
-        [ $amd_gpu_tmp -gt 70 ]  &&  ch_gpu_fan 60  && sleep $TIME && continue
-        [ $amd_gpu_tmp -gt 65 ]  &&  ch_gpu_fan 55  && sleep $TIME && continue
-        [ $amd_gpu_tmp -gt 60 ]  &&  ch_gpu_fan 50  && sleep $TIME && continue
-        [ $amd_gpu_tmp -gt 55 ]  &&  ch_gpu_fan 45  && sleep $TIME && continue
-        [ $amd_gpu_tmp -gt 50 ]  &&  ch_gpu_fan 40  && sleep $TIME && continue
-        [ $amd_gpu_tmp -gt 45 ]  &&  ch_gpu_fan 30  && sleep $TIME && continue
-        #[ $amd_gpu_tmp -gt 40 ]  &&  ch_gpu_fan 30  && sleep $TIME && continue
-        [ $amd_gpu_tmp -gt 35 ]  &&  ch_gpu_fan 20  && sleep $TIME && continue
-        [ $amd_gpu_tmp -gt 30 ]  &&  ch_gpu_fan 15  && sleep $TIME && continue
+        [ $amd_gpu_tmp -gt 95 ]  &&  ch_gpu_fan 75  && sleep $TIME && continue
+        [ $amd_gpu_tmp -gt 90 ]  &&  ch_gpu_fan 70  && sleep $TIME && continue
+        [ $amd_gpu_tmp -gt 85 ]  &&  ch_gpu_fan 65  && sleep $TIME && continue
+        [ $amd_gpu_tmp -gt 80 ]  &&  ch_gpu_fan 60  && sleep $TIME && continue
+        [ $amd_gpu_tmp -gt 75 ]  &&  ch_gpu_fan 55  && sleep $TIME && continue
+        [ $amd_gpu_tmp -gt 70 ]  &&  ch_gpu_fan 40  && sleep $TIME && continue
+        [ $amd_gpu_tmp -gt 65 ]  &&  ch_gpu_fan 35  && sleep $TIME && continue
+        [ $amd_gpu_tmp -gt 60 ]  &&  ch_gpu_fan 20  && sleep $TIME && continue
+        [ $amd_gpu_tmp -gt 55 ]  &&  ch_gpu_fan 19  && sleep $TIME && continue
+        [ $amd_gpu_tmp -gt 50 ]  &&  ch_gpu_fan 18  && sleep $TIME && continue
+        [ $amd_gpu_tmp -gt 45 ]  &&  ch_gpu_fan 17  && sleep $TIME && continue
+        #[ $amd_gpu_tmp -gt 40 ]  &&  ch_gpu_fan 16  && sleep $TIME && continue
+        [ $amd_gpu_tmp -lt 45 ]  &&  ch_gpu_fan 10  && sleep $TIME && continue
     }
 
     # sleep

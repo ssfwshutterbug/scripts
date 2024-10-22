@@ -8,11 +8,11 @@
 # wl-paste --watch clipgirl -s
 
 # there is no need saving to harddrive
-CLIP_HISTORY=/tmp/clip_history
+CLIP_HISTORY=/tmp/.clip_history
 ARGS=$@
 
 help() {
-	cat <<EOF
+    cat <<EOF
 clipgirl [OPTION]
 
     -s  --save      save clipboard content to a file
@@ -22,32 +22,32 @@ EOF
 }
 
 clip_save() {
-	[ ! -d $(dirname $CLIP_HISTORY) ] && mkdir -p $(dirname $CLIP_HISTORY)
-	[ ! -f $CLIP_HISTORY ] && touch $CLIP_HISTORY
+    [ ! -d $(dirname $CLIP_HISTORY) ] && mkdir -p $(dirname $CLIP_HISTORY)
+    [ ! -f $CLIP_HISTORY ] && touch $CLIP_HISTORY
 
-	content=$(wl-paste)
-	echo $content >>$CLIP_HISTORY
+    content=$(wl-paste)
+    echo $content >>$CLIP_HISTORY
 
-	# find a easy way, no need to change added line to the first line
-	# line=$(wc -l $CLIP_HISTORY | awk '{print $1}')
-	# # only works when lines > 1
-	# # use sed do magic work, always put new line in file's top
-	# [ $line -gt 1 ] && sed -i '1h;1d;$!H;$!d;G' $CLIP_HISTORY
-	# [ $line -gt $LINE ] && sed -i '51,$d' $CLIP_HISTORY
+    # find a easy way, no need to change added line to the first line
+    # line=$(wc -l $CLIP_HISTORY | awk '{print $1}')
+    # # only works when lines > 1
+    # # use sed do magic work, always put new line in file's top
+    # [ $line -gt 1 ] && sed -i '1h;1d;$!H;$!d;G' $CLIP_HISTORY
+    # [ $line -gt $LINE ] && sed -i '51,$d' $CLIP_HISTORY
 
 }
 
 clip_list() {
-	# it seems that sometimes copy data from firefox will cause it copy twice
-	#cat $CLIP_HISTORY | rg -v '^$' | sed 'h;g;p' | uniq -d
-	tac $CLIP_HISTORY | rg -v '^$' | sed 'h;g;p' | uniq -d
+    # it seems that sometimes copy data from firefox will cause it copy twice
+    #cat $CLIP_HISTORY | rg -v '^$' | sed 'h;g;p' | uniq -d
+    tac $CLIP_HISTORY | rg -v '^$' | sed 'h;g;p' | uniq -d
 }
 
 for i in $ARGS; do
-	case $i in
-	-s | --save) clip_save ;;
-	-l | --list) clip_list ;;
-	-h | --help) help ;;
-	*) help ;;
-	esac
+    case $i in
+    -s | --save) clip_save ;;
+    -l | --list) clip_list ;;
+    -h | --help) help ;;
+    *) help ;;
+    esac
 done

@@ -1,7 +1,7 @@
 #!/bin/sh
 
 PARAMETER=$1
-BROWSER=surf
+BROWSER=firefox
 TERMINAL=footclient
 
 emoji() {
@@ -14,7 +14,7 @@ emoji() {
 clipboard_his() {
     clipgirl --list |
         bemenu --fn 'Cartograph CF Italic 16' -H 40 -l 20 -i -p "copy clipboard: " --scrollbar always |
-        wl-copy -n -p
+        wl-copy -n
     # animation keypress shift+insert
     wtype -M shift -k insert -m shift
 }
@@ -53,7 +53,7 @@ hide_waybar() {
 }
 
 picker_color() {
-    hyprpicker | wl-copy -p -n
+    hyprpicker | wl-copy -n
 }
 
 hypr_switch_ws() {
@@ -81,7 +81,7 @@ change_volume() {
 change_brightness() {
     OPERATE=$1
     VALUE=${2:-2}
-    FILE=/tmp/brightness.current
+    FILE=/tmp/.brightness.current
 
     [ ! -e $FILE ] && {
         touch $FILE
@@ -91,26 +91,32 @@ change_brightness() {
     current=$(cat $FILE)
     brightness=$(expr $current $OPERATE $VALUE)
 
-    # use dunst to show a status bar of brightness.
-    notify-send -h string:frcolor:#d5cecb \
-        -h int:value:${brightness} \
-        -h string:x-dunst-stack-tag:brightness \
-        "brightness: ${brightness}" \
-        -t 1000
+    if [ $brightness -lt 0 ]; then
+        notify-send "brightness less than 0"
+        exit 1
+    else
+        # use dunst to show a status bar of brightness.
+        notify-send -h string:frcolor:#d5cecb \
+            -h int:value:${brightness} \
+            -h string:x-dunst-stack-tag:brightness \
+            "brightness: ${brightness}" \
+            -t 1000
 
-    # load module if not loaded yet and change brightness
-    lsmod | rg i2c || doas modprobe i2c-dev
-    ddcutil setvcp 10 $OPERATE $VALUE
-    echo $brightness >$FILE
+        # load module if not loaded yet and change brightness
+        lsmod | rg i2c || doas modprobe i2c-dev
+        ddcutil setvcp 10 $OPERATE $VALUE
+        echo $brightness >$FILE
+    fi
 }
 
 search() {
-    content=$(echo "" | bemenu --fn 'Cartograph CF Italic 16' -l 1 -i -p "Searching: ")
-    [ "$?" = 0 ] && mercury --search --new-tab "www.duckduckgo.com/?q=${content}"
+    content=$(echo "" | bemenu --fn 'Cartograph CF Italic 20' -l 0 -i -p "Searching: ")
+    [ "$?" = 0 ] && $BROWSER --search --new-tab "https://search.rhscz.eu/search?q=${content}&category_general=1&language=all&time_range=&safesearch=0&theme=simple"
 }
 
 surf() {
-    /home/mandalorian/.local/share/surf/start_surf "https://pkg.go.dev/"
+    pgrep caddy &>/dev/null || caddy file-server --listen :8080 --browse --root ~/.local/share/yacd/public/ &
+    /home/mandalorian/.local/share/surf/start_surf "http://localhost:8080/#/proxies"
 }
 
 note() {

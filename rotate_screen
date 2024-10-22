@@ -6,29 +6,36 @@
 # rotate_srceen -90 (reverse clock position)
 # rotate_srceen 0 (return to normal)
 
-
-
 # global define monitor name
 # which can be find by: hyprctl monitors
-monitor=DP-1
+# monitor=DP-1
+info=$(hyprctl monitors -j | jq '.[] | select(.focused == true)')
+monitor=$(echo $info | jq '.name' | tr -d '"')
+width=$(echo $info | jq '.width')
+height=$(echo $info | jq '.height')
+refresh=$(echo $info | jq '.refreshRate')
+positionX=$(echo $info | jq '.x')
+positionY=$(echo $info | jq '.y')
+scale=$(echo $info | jq '.scale')
 
-rotate () {
-    monitor=$1
-    method=$2
-    hyprctl keyword monitor $monitor,2560x1440@60,0x0,1,transform,$method
+rotate() {
+    method=$1
+    hyprctl keyword monitor $monitor,${width}x${height}@${refresh},${positionX}x${positionY},${scale},transform,$method
 }
 
 # accept argument of degrees
 degree=${1:-0}
 
-if [ $degree -eq 0 ];then
-    rotate $monitor 0
-elif [ $degree -eq 90 ];then
-    rotate $monitor 1
-elif [ $degree -eq -90 ];then
-    rotate $monitor 5
+# to normal
+if [ $degree -eq 0 ]; then
+    rotate 3
+# clock 90
+elif [ $degree -eq 90 ]; then
+    rotate 2
+# clock -90
+elif [ $degree -eq -90 ]; then
+    rotate 0
 else
     echo "Not a accept degrees! A accept one is 0/90/-90"
     exit 1
 fi
-

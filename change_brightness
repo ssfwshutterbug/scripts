@@ -9,7 +9,7 @@
 
 OPERATE=$1
 VALUE=${2:-2}
-FILE=/tmp/brightness.current
+FILE=/tmp/.brightness.current
 
 # use sed change and store current brightness value instead
 # of each time to query current brightness with `sudo ddcutil getvcp 10`
@@ -17,19 +17,20 @@ FILE=/tmp/brightness.current
 # which will leads to the notify shows delayed.
 
 [ ! -e $FILE ] && {
-	touch $FILE
-	ddcutil getvcp 10 | rg -o "current value .*," | choose 3 | tr -d "," >$FILE
+    touch $FILE
+    ddcutil getvcp 10 | rg -o "current value .*," | choose 3 | tr -d "," >$FILE
 }
 
 current=$(cat $FILE)
+[ "$OPERATE" = "" ] && exit
 brightness=$(expr $current $OPERATE $VALUE)
 
 # use dunst to show a status bar of brightness.
 notify-send -h string:frcolor:#d5cecb \
-	-h int:value:${brightness} \
-	-h string:x-dunst-stack-tag:brightness \
-	"brightness: ${brightness}" \
-	-t 1000
+    -h int:value:${brightness} \
+    -h string:x-dunst-stack-tag:brightness \
+    "brightness: ${brightness}" \
+    -t 1000
 
 # load module if not loaded yet and change brightness
 lsmod | rg i2c || doas modprobe i2c-dev

@@ -1,16 +1,14 @@
 #!/bin/sh
+# only works for one single file/directory
 
-PARAMETERS=$@
-args=""
-list=""
+PARAMETERS="$@"
 
-for i in $(echo $PARAMETERS); do
-    if [ -d "$i" -o -f "$i" ]; then
-        cp -r $i /tmp/ && echo -e "\e[45m $i moved to /tmp/ \e[0m"
-        list="$list $i"
-    else
-        args="$args $i"
-    fi
-done
+flags="$(echo " $PARAMETERS" | rg -oe " -+\w+" | sed 's/^ //')"
+name="$(echo " $PARAMETERS" | sed 's/ -.\w*//g' | sed 's/^ //')"
 
-rm $args -I --one-file-system $list
+if [ -d "$name" -o -f "$name" ]; then
+    formatname=$(echo "$name" | tr ' ' '_')
+    cp -r "$name" /tmp/ &&
+        rm $flags -I --one-file-system "$name" &&
+        echo -e "\033[40;31m move $formatname to /tmp/ \033[0m"
+fi
